@@ -47,11 +47,10 @@ install-base: sanity-check ## Install base packages
 	make clean
 
 install-cli-tools: sanity-check ## Install system packages
-	yes|sudo pacman -S --noconfirm --needed base-devel bison bzip2 ca-certificates cloc cmake dos2unix expect ffmpeg foremost gdb gnupg htop bottom hwinfo icu inotify-tools iproute2 jq llvm lsof ltrace make mlocate mplayer ncurses net-tools ngrep nmap openssh openssl parallel perl-image-exiftool pkgconf python-virtualenv re2c readline ripgrep rlwrap socat gnu-netcat sqlite sshpass tmate tor traceroute trash-cli tree unzip vbindiff xclip xz yay zip veracrypt git-delta viu xsv asciinema htmlq neovim glow jless websocat superfile gron exa fastfetch bat sysstat cronie
+	yes|sudo pacman -S --noconfirm --needed base-devel bison bzip2 ca-certificates cloc cmake dos2unix expect ffmpeg foremost gdb gnupg htop bottom hwinfo icu inotify-tools iproute2 jq llvm lsof ltrace make mlocate mplayer ncurses net-tools ngrep nmap openssh openssl parallel perl-image-exiftool pkgconf python-virtualenv re2c readline ripgrep rlwrap socat gnu-netcat sqlite sshpass tmate tor traceroute trash-cli tree unzip vbindiff xclip xz yay zip veracrypt git-delta viu xsv asciinema htmlq neovim glow jless websocat superfile gron eza fastfetch bat sysstat cronie
 	sudo ln -sf /usr/bin/bat /usr/local/bin/batcat
 	bash -c "$$(curl -fsSL https://gef.blah.cat/sh)"
-	missing_exa_lib=$$(ldd $$(which exa) | grep -ioP 'libgit2.*not found' | cut -d' ' -f 1)
-	[ ! -z $$missing_exa_lib ] && sudo ln -s /usr/lib/libgit2.so  "/usr/lib/$$missing_exa_lib"
+	# eza doesn't need the libgit2 workaround that exa required
 	# nvim config
 	[ ! -d ~/.config/nvim ] && git clone --depth=1 https://github.com/LazyVim/starter ~/.config/nvim
 	[ -f ~/.config/nvim/init.lua ] && [ ! -L ~/.config/nvim/init.lua ] && mv ~/.config/nvim/init.lua ~/.config/nvim/init.lua.skabak
@@ -143,7 +142,8 @@ install-gui: sanity-check ## Install gui, i3, polybar, kitty, rofi, picom
 
 install-gui-tools: sanity-check ## Install system packages
 	yes|sudo pacman -S --noconfirm --needed vlc-luajit # Must be done before obs-studio-browser to avoid conflicts
-	yes|sudo pacman -S --noconfirm --needed arandr blueman cheese code code-marketplace discord dunst filezilla flameshot ghex google-chrome gparted kdenlive kompare libreoffice-fresh meld okular qbittorrent torbrowser-launcher wireshark-qt ghidra signal-desktop dragon-drop-git nomachine obs-studio-browser emote guvcview audacity polkit-gnome
+	yes|sudo pacman -S --noconfirm --needed arandr blueman cheese code code-marketplace discord dunst filezilla flameshot ghex google-chrome gparted kompare libreoffice-fresh meld obsidian okular qbittorrent torbrowser-launcher wireshark-qt ghidra signal-desktop dragon-drop-git nomachine obs-studio-browser emote guvcview audacity polkit-gnome
+	yay --noconfirm --needed -S zen-browser-bin
 	# Do not start services in docker
 	[ ! -f /.dockerenv ] && sudo systemctl disable --now nxserver.service
 	xargs -n1 -I{} code --install-extension {} --force < config/extensions.txt
@@ -198,6 +198,55 @@ install-hardening: sanity-check ## Install hardening tools
 	yes|sudo pacman -S --noconfirm --needed opensnitch
 	# OPT-IN opensnitch as an egress firewall
 	# sudo systemctl enable --now opensnitchd.service
+	make clean
+
+install-hyprland: sanity-check ## Install Hyprland alongside GNOME (removes i3)
+	# Remove i3 ecosystem (cleanup for GNOME + Hyprland coexistence)
+	sudo pacman -Rns --noconfirm i3-gaps i3blocks i3lock i3lock-fancy-git i3status polybar picom feh arandr xorg-xhost thunar || true
+	yay -Rns --noconfirm rofi-power-menu i3-battery-popup-git || true
+	
+	# Install Hyprland ecosystem - GNOME Compatible
+	yes|sudo pacman -S --noconfirm --needed hyprland xdg-desktop-portal-hyprland \
+		hyprpaper hyprlock hypridle hyprpicker waybar rofi dunst grim slurp \
+		wl-clipboard qt5-wayland qt6-wayland wlr-randr brightnessctl
+	
+	# Ensure GNOME apps are available (may already be installed)
+	yes|sudo pacman -S --noconfirm --needed nautilus gnome-control-center
+	
+	# Install AUR packages
+	yay --noconfirm --needed -S hyprpolkitagent wlogout
+	
+	# Remove old i3 configs
+	rm -rf ~/.config/i3 ~/.config/polybar ~/.config/picom.conf || true
+	sudo rm -rf /etc/X11/xorg.conf.d/30-touchpad.conf || true
+	
+	# Create Hyprland config directories
+	mkdir -p ~/.config/hypr ~/.config/waybar ~/.config/dunst
+	
+	# Link Hyprland configs
+	[ -f ~/.config/hypr/hyprland.conf ] && [ ! -L ~/.config/hypr/hyprland.conf ] && mv ~/.config/hypr/hyprland.conf ~/.config/hypr/hyprland.conf.skabak
+	ln -sf /opt/skillarch/config/hypr/hyprland.conf ~/.config/hypr/hyprland.conf
+	
+	[ -f ~/.config/hypr/hyprpaper.conf ] && [ ! -L ~/.config/hypr/hyprpaper.conf ] && mv ~/.config/hypr/hyprpaper.conf ~/.config/hypr/hyprpaper.conf.skabak
+	ln -sf /opt/skillarch/config/hypr/hyprpaper.conf ~/.config/hypr/hyprpaper.conf
+	
+	[ -f ~/.config/hypr/hyprlock.conf ] && [ ! -L ~/.config/hypr/hyprlock.conf ] && mv ~/.config/hypr/hyprlock.conf ~/.config/hypr/hyprlock.conf.skabak
+	ln -sf /opt/skillarch/config/hypr/hyprlock.conf ~/.config/hypr/hyprlock.conf
+	
+	# Link Waybar configs
+	[ -f ~/.config/waybar/config.jsonc ] && [ ! -L ~/.config/waybar/config.jsonc ] && mv ~/.config/waybar/config.jsonc ~/.config/waybar/config.jsonc.skabak
+	ln -sf /opt/skillarch/config/waybar/config.jsonc ~/.config/waybar/config.jsonc
+	
+	[ -f ~/.config/waybar/style.css ] && [ ! -L ~/.config/waybar/style.css ] && mv ~/.config/waybar/style.css ~/.config/waybar/style.css.skabak
+	ln -sf /opt/skillarch/config/waybar/style.css ~/.config/waybar/style.css
+	
+	# Link Dunst config
+	[ -f ~/.config/dunst/dunstrc ] && [ ! -L ~/.config/dunst/dunstrc ] && mv ~/.config/dunst/dunstrc ~/.config/dunst/dunstrc.skabak
+	ln -sf /opt/skillarch/config/dunst/dunstrc ~/.config/dunst/dunstrc
+	
+	@echo "🎉 Hyprland installed! You can now choose 'Hyprland' at login screen."
+	@echo "🏠 GNOME session remains available as fallback."
+	@echo "📁 File manager: nautilus | Settings: gnome-control-center"
 	make clean
 
 update: sanity-check ## Update SkillArch

@@ -36,7 +36,7 @@ alias git-pull-all='find . -maxdepth 2 -name ".git" | cut -d/ -f2 | parallel -j1
 alias gdh='git diff HEAD'
 
 ## File Management
-alias l="exa -ll --group-directories-first $@"
+alias l="eza -ll --group-directories-first $@"
 alias la="l -a $@"
 alias t="l -T $@"
 alias t2="t -L 2 $@"

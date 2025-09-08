@@ -1,0 +1,109 @@
+{
+    // Waybar Configuration for SkillArch + Hyprland
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    "spacing": 4,
+    
+    // Module layout
+    "modules-left": ["hyprland/workspaces", "hyprland/mode"],
+    "modules-center": ["hyprland/window"],
+    "modules-right": ["pulseaudio", "network", "cpu", "memory", "battery", "clock", "tray"],
+    
+    // Workspaces
+    "hyprland/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "format": "{icon}",
+        "format-icons": {
+            "1": "1",
+            "2": "2", 
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "10",
+            "urgent": "",
+            "focused": "",
+            "default": ""
+        }
+    },
+    
+    "hyprland/mode": {
+        "format": "<span style=\"italic\">{}</span>"
+    },
+    
+    "hyprland/window": {
+        "format": "{}",
+        "max-length": 50
+    },
+    
+    // System tray
+    "tray": {
+        "spacing": 10
+    },
+    
+    // Clock
+    "clock": {
+        "timezone": "Europe/Paris",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+        "format-alt": "{:%Y-%m-%d}"
+    },
+    
+    // CPU
+    "cpu": {
+        "format": "{usage}% ",
+        "tooltip": false
+    },
+    
+    // Memory
+    "memory": {
+        "format": "{}% "
+    },
+    
+    // Battery
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{capacity}% {icon}",
+        "format-charging": "{capacity}% ",
+        "format-plugged": "{capacity}% ",
+        "format-alt": "{time} {icon}",
+        "format-icons": ["", "", "", "", ""]
+    },
+    
+    // Network
+    "network": {
+        "format-wifi": "{essid} ({signalStrength}%) ",
+        "format-ethernet": "{ipaddr}/{cidr} ",
+        "tooltip-format": "{ifname} via {gwaddr} ",
+        "format-linked": "{ifname} (No IP) ",
+        "format-disconnected": "Disconnected ⚠",
+        "format-alt": "{ifname}: {ipaddr}/{cidr}"
+    },
+    
+    // Audio
+    "pulseaudio": {
+        "format": "{volume}% {icon} {format_source}",
+        "format-bluetooth": "{volume}% {icon} {format_source}",
+        "format-bluetooth-muted": " {icon} {format_source}",
+        "format-muted": " {format_source}",
+        "format-source": "{volume}% ",
+        "format-source-muted": "",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol"
+    }
+}
